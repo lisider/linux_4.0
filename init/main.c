@@ -850,12 +850,35 @@ static void __init do_initcall_level(int level)
 		do_one_initcall(*fn);
 }
 
+static char * int2string(int value){
+	char * string []= {
+		"pure_initcall",
+		"core_initcall",
+		"postcore_initcall",
+		"arch_initcall",
+		"subsys_initcall",
+		"fs_initcall",
+		"device_initcall",
+		"late_initcall",
+		"not found"
+	};
+
+	if(value <= sizeof(string)/sizeof("a") - 2)
+		return string[value];
+	else
+		return string[sizeof(string)/sizeof("a") - 1];
+}
+
 static void __init do_initcalls(void)
 {
 	int level;
 
 	for (level = 0; level < ARRAY_SIZE(initcall_levels) - 1; level++)
+	{
+		printk("suws_kernel initcall%d %s %s,%s,%d\n",level,int2string(level),__FILE__,__func__,__LINE__);
 		do_initcall_level(level);
+		printk("suws_kernel initcall%d %s %s,%s,%d\n",level,int2string(level),__FILE__,__func__,__LINE__);
+	}
 }
 
 /*
