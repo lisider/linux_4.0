@@ -202,6 +202,7 @@ EXPORT_SYMBOL(loops_per_jiffy);
 static int __init debug_kernel(char *str)
 {
 	console_loglevel = CONSOLE_LOGLEVEL_DEBUG;
+	printk("suws_kernel cmdline early_param debug %s,%s,%d\n",__FILE__,__func__,__LINE__);
 	return 0;
 }
 
@@ -232,6 +233,14 @@ static int __init loglevel(char *str)
 }
 
 early_param("loglevel", loglevel);
+
+static int __init new_key_func(char *str)
+{
+	printk("suws_kernel cmdline new_key:%s,%s,%s,%d\n",str,__FILE__,__func__,__LINE__);
+	return 0;
+}
+
+__setup("new_key=", new_key_func);
 
 /* Change NUL term back to "=", to make "param" the whole string. */
 static int __init repair_env_string(char *param, char *val, const char *unused)
@@ -431,7 +440,7 @@ void __init parse_early_options(char *cmdline)
 }
 
 /* Arch code calls this early on, or if not, just before other parsing. */
-void __init parse_early_param(void)
+void __init parse_early_param(void) // 解析 early_param(str, fn) (在 .init.setup)
 {
 	static int done __initdata;
 	static char tmp_cmdline[COMMAND_LINE_SIZE] __initdata;
@@ -528,14 +537,21 @@ asmlinkage __visible void __init start_kernel(void)
 	page_alloc_init();
 
 	pr_notice("Kernel command line: %s\n", boot_command_line);
-	parse_early_param();
+	printk("suws_kernel cmdline parse_early_param +++ %s,%s,%d\n",__FILE__,__func__,__LINE__);
+	parse_early_param(); // 解析 early_param(str, fn) (在 .init.setup 段) // 对应函数
+	printk("suws_kernel cmdline parse_early_param --- %s,%s,%d\n",__FILE__,__func__,__LINE__);
+	printk("suws_kernel cmdline parse_args Booting kernel +++ %s,%s,%d\n",__FILE__,__func__,__LINE__);
 	after_dashes = parse_args("Booting kernel",
 				  static_command_line, __start___param,
 				  __stop___param - __start___param,
-				  -1, -1, &unknown_bootoption);
-	if (!IS_ERR_OR_NULL(after_dashes))
+				  -1, -1, &unknown_bootoption); //解析 __setup(str, fn) 对应函数  (在 .init.setup 段) 和 module_param(name, type, perm) 对应变量 (在__param 段)
+	printk("suws_kernel cmdline parse_args Booting kernel --- %s,%s,%d\n",__FILE__,__func__,__LINE__);
+	if (!IS_ERR_OR_NULL(after_dashes)){
+		printk("suws_kernel cmdline parse_args Setting init args +++ %s,%s,%d\n",__FILE__,__func__,__LINE__);
 		parse_args("Setting init args", after_dashes, NULL, 0, -1, -1,
 			   set_init_arg);
+		printk("suws_kernel cmdline parse_args Setting init args --- %s,%s,%d\n",__FILE__,__func__,__LINE__);
+	}
 
 	jump_label_init();
 

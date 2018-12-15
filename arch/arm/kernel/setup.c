@@ -918,7 +918,9 @@ void __init setup_arch(char **cmdline_p)
 	strlcpy(cmd_line, boot_command_line, COMMAND_LINE_SIZE);
 	*cmdline_p = cmd_line;
 
-	parse_early_param();
+	printk("suws_kernel cmdline parse_early_param +++ %s,%s,%d\n",__FILE__,__func__,__LINE__);
+	parse_early_param(); // 解析 early_param(str, fn)
+	printk("suws_kernel cmdline parse_early_param --- %s,%s,%d\n",__FILE__,__func__,__LINE__);
 
 	early_paging_init(mdesc, lookup_processor_type(read_cpuid_id()));
 	setup_dma_zone(mdesc);

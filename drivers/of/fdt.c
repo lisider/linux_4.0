@@ -1026,7 +1026,7 @@ bool __init early_init_dt_verify(void *params)
 void __init early_init_dt_scan_nodes(void)
 {
 	/* Retrieve various information from the /chosen node */
-	of_scan_flat_dt(early_init_dt_scan_chosen, boot_command_line);
+	of_scan_flat_dt(early_init_dt_scan_chosen, boot_command_line); // 为Kernel command line 赋值,u-boot 中的 bootargs 优先,chosen节点 中的 bootargs 在后 . u-boot 无 bootargs,chosen 节点才生效
 
 	/* Initialize {size,address}-cells info */
 	of_scan_flat_dt(early_init_dt_scan_root, NULL);
