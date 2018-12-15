@@ -189,12 +189,14 @@ static int __init vexpress_config_init(void)
 	int err = 0;
 	struct device_node *node;
 
+	printk("suws_kernel dts arch related , populate node in \"arm,vexpress,config-bus\" +++ %s,%s,%d\n",__FILE__,__func__,__LINE__);
 	/* Need the config devices early, before the "normal" devices... */
 	for_each_compatible_node(node, NULL, "arm,vexpress,config-bus") {
 		err = vexpress_config_populate(node);
 		if (err)
 			break;
 	}
+	printk("suws_kernel dts arch related , populate node in \"arm,vexpress,config-bus\" --- %s,%s,%d\n",__FILE__,__func__,__LINE__);
 
 	return err;
 }

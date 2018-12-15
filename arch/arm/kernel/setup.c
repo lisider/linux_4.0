@@ -807,6 +807,7 @@ static int __init customize_machine(void)
 	 * machine from the device tree, if no callback is provided,
 	 * otherwise we would always need an init_machine callback.
 	 */
+	printk("suws_kernel dts customize_machine parse dts all +++ %s,%s,%d\n",__FILE__,__func__,__LINE__);
 	of_iommu_init();
 	if (machine_desc->init_machine)
 		machine_desc->init_machine();
@@ -815,6 +816,7 @@ static int __init customize_machine(void)
 		of_platform_populate(NULL, of_default_bus_match_table,
 					NULL, NULL);
 #endif
+	printk("suws_kernel dts customize_machine parse dts all --- %s,%s,%d\n",__FILE__,__func__,__LINE__);
 	return 0;
 }
 arch_initcall(customize_machine);
@@ -929,7 +931,9 @@ void __init setup_arch(char **cmdline_p)
 	if (mdesc->restart)
 		arm_pm_restart = mdesc->restart;
 
+	printk("suws_kernel dts GEN device_node & of_root list +++ %s,%s,%d\n",__FILE__,__func__,__LINE__);
 	unflatten_device_tree();
+	printk("suws_kernel dts GEN device_node & of_root list --- %s,%s,%d\n",__FILE__,__func__,__LINE__);
 
 	arm_dt_init_cpu_maps();
 	psci_init();

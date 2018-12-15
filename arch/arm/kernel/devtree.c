@@ -215,7 +215,9 @@ const struct machine_desc * __init setup_machine_fdt(unsigned int dt_phys)
 	if (!dt_phys || !early_init_dt_verify(phys_to_virt(dt_phys)))
 		return NULL;
 
+	printk("suws_kernel dts match_machine +++ %s,%s,%d\n",__FILE__,__func__,__LINE__);
 	mdesc = of_flat_dt_match_machine(mdesc_best, arch_get_next_mach);
+	printk("suws_kernel dts match_machine --- %s,%s,%d\n",__FILE__,__func__,__LINE__);
 
 	if (!mdesc) {
 		const char *prop;
@@ -241,7 +243,9 @@ const struct machine_desc * __init setup_machine_fdt(unsigned int dt_phys)
 	if (mdesc->dt_fixup)
 		mdesc->dt_fixup();
 
+	printk("suws_kernel dts parse chosen&memory +++ %s,%s,%d\n",__FILE__,__func__,__LINE__);
 	early_init_dt_scan_nodes();
+	printk("suws_kernel dts parse chosen&memory --- %s,%s,%d\n",__FILE__,__func__,__LINE__);
 
 	/* Change machine number to match the mdesc we're using */
 	__machine_arch_type = mdesc->nr;
