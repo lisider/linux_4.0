@@ -918,6 +918,7 @@ int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
 	if (p != NULL && l > 0)
 		strlcpy(data, p, min((int)l, COMMAND_LINE_SIZE));
 
+	printk("suws_kernel cmdline GEN cmdline:%s,%s,%s,%d\n",(char *)data,__FILE__,__func__,__LINE__);
 	/*
 	 * CONFIG_CMDLINE is meant to be a default in case nothing else
 	 * managed to set the command line, unless CONFIG_CMDLINE_FORCE
@@ -926,8 +927,13 @@ int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
 #ifdef CONFIG_CMDLINE
 #ifndef CONFIG_CMDLINE_FORCE
 	if (!((char *)data)[0])
+	{
 #endif
+		printk("suws_kernel cmdline cmdline is null,use CONFIG_CMDLINE:%s,%s,%s,%d\n",CONFIG_CMDLINE,__FILE__,__func__,__LINE__);
 		strlcpy(data, CONFIG_CMDLINE, COMMAND_LINE_SIZE);
+#ifndef CONFIG_CMDLINE_FORCE
+	}
+#endif
 #endif /* CONFIG_CMDLINE */
 
 	pr_debug("Command line is: %s\n", (char*)data);
