@@ -1,0 +1,6 @@
+menuconfig NODE_PLATFORM
+	tristate "GenWQE PCIe Accelerator"
+	default n
+	help
+		sample for platform
+

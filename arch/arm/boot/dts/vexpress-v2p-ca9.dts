@@ -69,6 +69,19 @@
 		reg = <0x60000000 0x40000000>;
 	};
 
+	node-fake { // 没有 compatible属性 的节点不会被解析成 device_node  , 无效节点
+
+	};
+
+	node-amba { //compatible 属性为 如下的节点 会被 解析为 amba总线的节点
+        compatible = "arm,xxx", "arm,primecell";
+	};
+
+	node-platform { // 挂在根节点下面的节点 不是 amba节点,就是platform 节点 ,该节点为 platform 节点.
+        compatible = "vendor-name", "chip-name", "chip-name2","chip-name3"; // 驱动 的 platform_driver.driver.of_match_table[0].compatible 如果是 "vendor-name" 或 其他 "chip-name" 字符串,就能匹配到该节点
+
+	};
+
 	clcd@10020000 {
 		compatible = "arm,pl111", "arm,primecell";
 		reg = <0x10020000 0x1000>;
@@ -300,7 +313,7 @@
 	};
 
 	smb {
-		compatible = "simple-bus";
+		compatible = "simple-bus";  //节点 compatible 属性 为 "simple-bus" 等字符串 的 节点 下面挂载的 都是 platform 节点
 
 		#address-cells = <2>;
 		#size-cells = <1>;
