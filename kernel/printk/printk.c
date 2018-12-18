@@ -1964,6 +1964,7 @@ static int __init console_setup(char *str)
 	char buf[sizeof(console_cmdline[0].name) + 4]; /* 4 for "ttyS" */
 	char *s, *options, *brl_options = NULL;
 	int idx;
+	printk("suws_kernel printk console_setup +++ %s,%s,%d\n",__FILE__,__func__,__LINE__);
 
 	if (_braille_console_setup(&str, &brl_options))
 		return 1;
@@ -1993,8 +1994,10 @@ static int __init console_setup(char *str)
 	idx = simple_strtoul(s, NULL, 10);
 	*s = 0;
 
+	printk("suws_kernel printk __add_preferred_console buf:%s,idx:%d,options:%s,%s,%s,%d\n",buf,idx,options,__FILE__,__func__,__LINE__);
 	__add_preferred_console(buf, idx, options, brl_options);
 	console_set_on_cmdline = 1;
+	printk("suws_kernel printk console_setup --- %s,%s,%d\n",__FILE__,__func__,__LINE__);
 	return 1;
 }
 __setup("console=", console_setup);
