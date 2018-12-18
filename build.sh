@@ -6,5 +6,25 @@
 # Version : 1.0
 #########################################################################
 #!/bin/bash
-export ARCH=arm CROSS_COMPILE=arm-linux-gnueabi-;make LOADADDR=0x60004000 uImage -j8 && make modules && make dtbs \
-    && cp arch/arm/boot/uImage ../tftpboot && cp arch/arm/boot/dts/vexpress-v2p-ca9.dtb ../tftpboot
+CURRENT_SHELL=$(ps -ef | grep `echo $$` | grep -v grep | grep -v ps | awk -F" " '{print $8}' |grep -v "awk" | uniq)
+
+
+if [ $CURRENT_SHELL != "bash" ];then
+    echo use bash as your shell
+    return -2
+else
+    echo using bash
+fi
+
+if [ $# -eq 0 ];then
+    export ARCH=arm CROSS_COMPILE=arm-linux-gnueabi-;make LOADADDR=0x60004000 uImage -j8 \
+        && cp arch/arm/boot/uImage ../tftpboot
+elif [ "$1" == "all" ];then
+    export ARCH=arm CROSS_COMPILE=arm-linux-gnueabi-;make LOADADDR=0x60004000 uImage -j8 && make modules && make dtbs \
+        && cp arch/arm/boot/uImage ../tftpboot && cp arch/arm/boot/dts/vexpress-v2p-ca9.dtb ../tftpboot
+elif [ "$1" == "dts" ];then
+    export ARCH=arm CROSS_COMPILE=arm-linux-gnueabi-;make dtbs \
+        && cp arch/arm/boot/dts/vexpress-v2p-ca9.dtb ../tftpboot
+elif [ "$1" == "modules" ] || [ $1 == "module"  ];then
+    export ARCH=arm CROSS_COMPILE=arm-linux-gnueabi-;make modules
+fi
