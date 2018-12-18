@@ -770,6 +770,7 @@ static int __init early_init_dt_scan_chosen_serial(void)
 	const struct of_device_id *match = __earlycon_of_table;
 	const void *fdt = initial_boot_params;
 
+	printk("suws_kernel printk %s,%s,%d\n",__FILE__,__func__,__LINE__);
 	offset = fdt_path_offset(fdt, "/chosen");
 	if (offset < 0)
 		offset = fdt_path_offset(fdt, "/chosen@0");
@@ -777,10 +778,15 @@ static int __init early_init_dt_scan_chosen_serial(void)
 		return -ENOENT;
 
 	p = fdt_getprop(fdt, offset, "stdout-path", &l);
-	if (!p)
+	if (!p){
 		p = fdt_getprop(fdt, offset, "linux,stdout-path", &l);
-	if (!p || !l)
+		printk("suws_kernel printk %s,%s,%d\n",__FILE__,__func__,__LINE__);
+	}
+	if (!p || !l){
+		printk("suws_kernel printk %s,%s,%d\n",__FILE__,__func__,__LINE__);
 		return -ENOENT;
+	}
+	printk("suws_kernel printk %s,%s,%d\n",__FILE__,__func__,__LINE__);
 
 	/* Get the node specified by stdout-path */
 	offset = fdt_path_offset(fdt, p);
@@ -806,12 +812,18 @@ static int __init early_init_dt_scan_chosen_serial(void)
 
 static int __init setup_of_earlycon(char *buf)
 {
-	if (buf)
+	int ret ;
+	printk("suws_kernel printk earlycon +++ %s,%s,%d\n",__FILE__,__func__,__LINE__);
+	if (buf){ // buf 中 装的是 ttyAMA0
+		printk("suws_kernel printk earlycon --- %s,%s,%d\n",__FILE__,__func__,__LINE__);
 		return 0;
+	}
 
-	return early_init_dt_scan_chosen_serial();
+	ret = early_init_dt_scan_chosen_serial();
+	printk("suws_kernel printk earlycon --- %s,%s,%d\n",__FILE__,__func__,__LINE__);
+	return ret ;
 }
-early_param("earlycon", setup_of_earlycon);
+early_param("earlycon", setup_of_earlycon);  // 这个是用来将 cmdline 中的 console 赋值的,如果没有赋值,则赋值,如果有,直接return
 #endif
 
 /**

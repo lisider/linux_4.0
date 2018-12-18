@@ -420,12 +420,16 @@ static noinline void __init_refok rest_init(void)
 static int __init do_early_param(char *param, char *val, const char *unused)
 {
 	const struct obs_kernel_param *p;
+	int ret = 0;
 
+	ret = printk("suws_kernel printk param:%s,%s,%s,%d\n",param,__FILE__,__func__,__LINE__);
+	printk("ret :%d\n",ret);
 	for (p = __setup_start; p < __setup_end; p++) {
-		if ((p->early && parameq(param, p->str)) ||
+		if ((p->early && parameq(param, p->str))&&(10 == printk("already go\n")) ||
 		    (strcmp(param, "console") == 0 &&
 		     strcmp(p->str, "earlycon") == 0)
 		) {
+			printk("suws_kernel printk p->str:%s,%s,%s,%d\n",p->str,__FILE__,__func__,__LINE__);
 			if (p->setup_func(val) != 0)
 				pr_warn("Malformed early option '%s'\n", param);
 		}

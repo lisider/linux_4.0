@@ -227,7 +227,9 @@ static struct console hvc_console = {
  */
 static int __init hvc_console_init(void)
 {
+	printk("suws_kernel printk hvc_console_init +++ %s,%s,%d\n",__FILE__,__func__,__LINE__);
 	register_console(&hvc_console);
+	printk("suws_kernel printk hvc_console_init --- %s,%s,%d\n",__FILE__,__func__,__LINE__);
 	return 0;
 }
 console_initcall(hvc_console_init);

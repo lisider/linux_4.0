@@ -2202,7 +2202,11 @@ uart_configure_port(struct uart_driver *drv, struct uart_state *state,
 		 * It may be that the port was not available.
 		 */
 		if (port->cons && !(port->cons->flags & CON_ENABLED))
+		{
+			printk("suws_kernel printk uart_console +++ %s,%s,%d\n",__FILE__,__func__,__LINE__);
 			register_console(port->cons);
+			printk("suws_kernel printk uart_console --- %s,%s,%d\n",__FILE__,__func__,__LINE__);
+		}
 
 		/*
 		 * Power down all ports by default, except the

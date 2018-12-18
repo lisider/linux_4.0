@@ -2949,6 +2949,7 @@ static int __init con_init(void)
 	const char *display_desc = NULL;
 	struct vc_data *vc;
 	unsigned int currcons = 0, i;
+	printk("suws_kernel printk  con_init +++ %s,%s,%d\n",__FILE__,__func__,__LINE__);
 
 	console_lock();
 
@@ -3007,6 +3008,7 @@ static int __init con_init(void)
 #ifdef CONFIG_VT_CONSOLE
 	register_console(&vt_console_driver);
 #endif
+	printk("suws_kernel printk  con_init --- %s,%s,%d\n",__FILE__,__func__,__LINE__);
 	return 0;
 }
 console_initcall(con_init);

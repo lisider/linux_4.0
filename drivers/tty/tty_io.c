@@ -3514,6 +3514,7 @@ void tty_default_fops(struct file_operations *fops)
  */
 void __init console_init(void)
 {
+	printk("suws_kernel printk  console_init +++ %s,%s,%d\n",__FILE__,__func__,__LINE__);
 	initcall_t *call;
 
 	/* Setup the default TTY line discipline. */
@@ -3528,6 +3529,7 @@ void __init console_init(void)
 		(*call)();
 		call++;
 	}
+	printk("suws_kernel printk  console_init --- %s,%s,%d\n",__FILE__,__func__,__LINE__);
 }
 
 static char *tty_devnode(struct device *dev, umode_t *mode)

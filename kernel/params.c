@@ -128,6 +128,7 @@ static int parse_one(char *param,
 
 	if (handle_unknown) {
 		pr_debug("doing %s: %s='%s'\n", doing, param, val);
+		printk("doing %s: %s='%s'\n", doing, param, val);
 		return handle_unknown(param, val, doing);
 	}
 

@@ -2407,22 +2407,34 @@ void register_console(struct console *newcon)
 	unsigned long flags;
 	struct console *bcon = NULL;
 	struct console_cmdline *c;
+	printk("suws_kernel printk register_console +++ %s,%s,%d\n",__FILE__,__func__,__LINE__);
 
-	if (console_drivers)
+	if (console_drivers){
+		printk("suws_kernel printk %s,%s,%d\n",__FILE__,__func__,__LINE__);
 		for_each_console(bcon)
+		{
+			printk("suws_kernel printk %s,%s,%d\n",__FILE__,__func__,__LINE__);
 			if (WARN(bcon == newcon,
 					"console '%s%d' already registered\n",
 					bcon->name, bcon->index))
+			{
+				printk("suws_kernel printk %s,%s,%d\n",__FILE__,__func__,__LINE__);
 				return;
+			}
+		}
+	}
 
 	/*
 	 * before we register a new CON_BOOT console, make sure we don't
 	 * already have a valid console
 	 */
 	if (console_drivers && newcon->flags & CON_BOOT) {
+		printk("suws_kernel printk %s,%s,%d\n",__FILE__,__func__,__LINE__);
 		/* find the last or real console */
 		for_each_console(bcon) {
+			printk("suws_kernel printk %s,%s,%d\n",__FILE__,__func__,__LINE__);
 			if (!(bcon->flags & CON_BOOT)) {
+				printk("suws_kernel printk %s,%s,%d\n",__FILE__,__func__,__LINE__);
 				pr_info("Too late to register bootconsole %s%d\n",
 					newcon->name, newcon->index);
 				return;
@@ -2431,13 +2443,22 @@ void register_console(struct console *newcon)
 	}
 
 	if (console_drivers && console_drivers->flags & CON_BOOT)
+	{
+		printk("suws_kernel printk %s,%s,%d\n",__FILE__,__func__,__LINE__);
 		bcon = console_drivers;
+	}
 
 	if (preferred_console < 0 || bcon || !console_drivers)
+	{
+		printk("suws_kernel printk %s,%s,%d\n",__FILE__,__func__,__LINE__);
 		preferred_console = selected_console;
+	}
 
 	if (newcon->early_setup)
+	{
+		printk("suws_kernel printk %s,%s,%d\n",__FILE__,__func__,__LINE__);
 		newcon->early_setup();
+	}
 
 	/*
 	 *	See if we want to use this console driver. If we
@@ -2445,12 +2466,18 @@ void register_console(struct console *newcon)
 	 *	that registers here.
 	 */
 	if (preferred_console < 0) {
+		printk("suws_kernel printk %s,%s,%d\n",__FILE__,__func__,__LINE__);
 		if (newcon->index < 0)
+		{
+			printk("suws_kernel printk %s,%s,%d\n",__FILE__,__func__,__LINE__);
 			newcon->index = 0;
+		}
 		if (newcon->setup == NULL ||
 		    newcon->setup(newcon, NULL) == 0) {
+			printk("suws_kernel printk %s,%s,%d\n",__FILE__,__func__,__LINE__);
 			newcon->flags |= CON_ENABLED;
 			if (newcon->device) {
+				printk("suws_kernel printk %s,%s,%d\n",__FILE__,__func__,__LINE__);
 				newcon->flags |= CON_CONSDEV;
 				preferred_console = 0;
 			}
@@ -2464,21 +2491,40 @@ void register_console(struct console *newcon)
 	for (i = 0, c = console_cmdline;
 	     i < MAX_CMDLINECONSOLES && c->name[0];
 	     i++, c++) {
+		printk("suws_kernel printk %s,%s,%d\n",__FILE__,__func__,__LINE__);
 		BUILD_BUG_ON(sizeof(c->name) != sizeof(newcon->name));
+		printk("suws_kernel printk c->name :%s,newcon->name:%s,%s,%s,%d\n",c->name,newcon->name,__FILE__,__func__,__LINE__);
 		if (strcmp(c->name, newcon->name) != 0)
+		{
+			printk("suws_kernel printk %s,%s,%d\n",__FILE__,__func__,__LINE__);
 			continue;
+		}
 		if (newcon->index >= 0 &&
-		    newcon->index != c->index)
+				newcon->index != c->index){
+			printk("suws_kernel printk %s,%s,%d\n",__FILE__,__func__,__LINE__);
 			continue;
-		if (newcon->index < 0)
+		}
+
+		printk("suws_kernel printk %s,%s,%d\n",__FILE__,__func__,__LINE__);
+
+		if (newcon->index < 0){
+			printk("suws_kernel printk %s,%s,%d\n",__FILE__,__func__,__LINE__);
 			newcon->index = c->index;
+		}
 
 		if (_braille_register_console(newcon, c))
+		{
+			printk("suws_kernel printk %s,%s,%d\n",__FILE__,__func__,__LINE__);
 			return;
+		}
 
 		if (newcon->setup &&
 		    newcon->setup(newcon, console_cmdline[i].options) != 0)
+		{
+			printk("suws_kernel printk %s,%s,%d\n",__FILE__,__func__,__LINE__);
 			break;
+		}
+		printk("suws_kernel printk %s,%s,%d\n",__FILE__,__func__,__LINE__);
 		newcon->flags |= CON_ENABLED;
 		newcon->index = c->index;
 		if (i == selected_console) {
@@ -2488,8 +2534,10 @@ void register_console(struct console *newcon)
 		break;
 	}
 
-	if (!(newcon->flags & CON_ENABLED))
+	if (!(newcon->flags & CON_ENABLED)){
+		printk("suws_kernel printk register_console --- %s,%s,%d\n",__FILE__,__func__,__LINE__);
 		return;
+	}
 
 	/*
 	 * If we have a bootconsole, and are switching to a real console,
@@ -2498,7 +2546,10 @@ void register_console(struct console *newcon)
 	 * see the beginning boot messages twice
 	 */
 	if (bcon && ((newcon->flags & (CON_CONSDEV | CON_BOOT)) == CON_CONSDEV))
+	{
+		printk("suws_kernel printk %s,%s,%d\n",__FILE__,__func__,__LINE__);
 		newcon->flags &= ~CON_PRINTBUFFER;
+	}
 
 	/*
 	 *	Put this console in the list - keep the
@@ -2506,15 +2557,18 @@ void register_console(struct console *newcon)
 	 */
 	console_lock();
 	if ((newcon->flags & CON_CONSDEV) || console_drivers == NULL) {
+		printk("suws_kernel printk %s,%s,%d\n",__FILE__,__func__,__LINE__);
 		newcon->next = console_drivers;
 		console_drivers = newcon;
 		if (newcon->next)
 			newcon->next->flags &= ~CON_CONSDEV;
 	} else {
+		printk("suws_kernel printk %s,%s,%d\n",__FILE__,__func__,__LINE__);
 		newcon->next = console_drivers->next;
 		console_drivers->next = newcon;
 	}
 	if (newcon->flags & CON_PRINTBUFFER) {
+		printk("suws_kernel printk %s,%s,%d\n",__FILE__,__func__,__LINE__);
 		/*
 		 * console_unlock(); will print out the buffered messages
 		 * for us.
@@ -2541,6 +2595,7 @@ void register_console(struct console *newcon)
 	 * users know there might be something in the kernel's log buffer that
 	 * went to the bootconsole (that they do not see on the real console)
 	 */
+	printk("suws_kernel printk console_enabled %s,%s,%d\n",__FILE__,__func__,__LINE__);
 	pr_info("%sconsole [%s%d] enabled\n",
 		(newcon->flags & CON_BOOT) ? "boot" : "" ,
 		newcon->name, newcon->index);
