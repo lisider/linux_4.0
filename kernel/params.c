@@ -93,6 +93,7 @@ static void param_check_unsafe(const struct kernel_param *kp)
 	}
 }
 
+extern int get_mynum(void);
 static int parse_one(char *param,
 		     char *val,
 		     const char *doing,
@@ -118,10 +119,14 @@ static int parse_one(char *param,
 				return -EINVAL;
 			pr_debug("handling %s with %p\n", param,
 				params[i].ops->set);
+			if (strcmp(params[i].name,"node-platform.num"))
+				printk("suws_kernel cmdline num:%d, %s,%s,%d\n",get_mynum(),__FILE__,__func__,__LINE__);
 			mutex_lock(&param_lock);
 			param_check_unsafe(&params[i]);
 			err = params[i].ops->set(val, &params[i]);
 			mutex_unlock(&param_lock);
+			if (strcmp(params[i].name,"node-platform.num"))
+				printk("suws_kernel cmdline num:%d, %s,%s,%d\n",get_mynum(),__FILE__,__func__,__LINE__);
 			return err;
 		}
 	}

@@ -5,6 +5,14 @@
 #include <linux/of_irq.h>
 #include <linux/interrupt.h>
 
+static int num=10;
+
+int get_mynum(void){
+	return num;
+}
+EXPORT_SYMBOL_GPL(get_mynum);
+
+
 static irqreturn_t irq_int_handler(void)
 {
     /* do something */
@@ -20,6 +28,7 @@ int pdr_probe(struct platform_device * pdev)
     unsigned int irq_number = 0; // sw interrupt number
     int ret = 0;
 
+	printk("suws_kernel cmdline num:%d %s,%s,%d\n",num,__FILE__,__func__,__LINE__);
 	printk("suws_kernel bdd +++ %s,%s,%d\n",__FILE__,__func__,__LINE__);
     if (pdev->dev.of_node){
 
@@ -83,6 +92,7 @@ void __exit _driver_exit(void)
 
 }
 
+module_param(num,int,S_IRUGO);
 /********模块三要素**********/
 module_init(_driver_init);
 module_exit(_driver_exit);

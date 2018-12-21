@@ -18,8 +18,13 @@
 	#address-cells = <1>;
 	#size-cells = <1>;
 
+	/*
+	 debug 被 parse_args "early options" 获取并解析
+	 node-platform.num 被 parse_args "Booting kernel" 获取 并解析,修改了 node-platform.o 中的 num 变量,node-platform.o 中的模块要声明 num 变量
+	 new_key 被 parse_args "Booting kernel" 获取并解析
+	 */
 	chosen {
-        bootargs = "root=/dev/nfs rw  nfsroot=192.168.131.142:/home/pop/linux-debug/busybox/rootfs init=/linuxrc ip=192.168.131.140  console=ttyAMA0 new_key=new_value debug";
+        bootargs = "root=/dev/nfs rw  nfsroot=192.168.131.142:/home/pop/linux-debug/busybox/rootfs init=/linuxrc ip=192.168.131.140  console=ttyAMA0 new_key=new_value debug node-platform.num=100";
     };
 
 	aliases {
