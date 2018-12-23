@@ -1,0 +1,6 @@
+menuconfig NODE_I2C
+	tristate "GenWQE PCIe Accelerator"
+	default n
+	help
+		sample for i2c
+

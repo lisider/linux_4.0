@@ -114,6 +114,15 @@
 					compatible = "idt,89hpes32h8";
 					reg = <0x60>;
 				};
+				node-i2c@40{
+					compatible = "vendor-name-i2c", "chip-name-i2c";
+					reg = <0x40>;
+					prop_bool = <1>;
+					prop_string = "value_string";
+					prop_int = <36>;
+					// 58 是 gpio number HW interrupt ID
+					interrupts = <0 58 4>; // 0 spi interrupts , 58 interrupt number ranges /spi [0-987]/ppi [0-15] , 4 高电平触发(0 ^,2 v,4 -,8 _)
+				};
 			};
 
 			aaci@04000 {
