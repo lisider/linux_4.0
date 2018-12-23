@@ -11,6 +11,46 @@ static irqreturn_t irq_int_handler(void)
     return IRQ_HANDLED;
 }
 
+//---------------------------- 节点序列中的 节点1
+
+static char node_one_buf[32] = {0};
+
+static ssize_t sysfs_demo_show_node_one(struct kobject *kobj, struct kobj_attribute *attr, char * buf)
+{
+    pr_info("enter show node: %s\n", attr->attr.name);
+    return sprintf(buf, "%s: %s\n", attr->attr.name, node_one_buf);
+}
+
+static ssize_t sysfs_demo_store_node_one(struct kobject *kobj, struct kobj_attribute *attr, const char * buf, size_t n)
+{
+    pr_info("enter write node: %s\n", attr->attr.name);
+    snprintf(node_one_buf,(n <= sizeof(node_one_buf)) ? n : sizeof(node_one_buf), "%s", buf);
+    return n;
+}
+
+static struct kobj_attribute node_one_attribute =
+    __ATTR(node_one, S_IWUSR|S_IRUGO, sysfs_demo_show_node_one, sysfs_demo_store_node_one); //读写属性
+
+//---------------------------- 节点序列中的 节点2
+static ssize_t sysfs_demo_show_node_two(struct kobject *kobj, struct kobj_attribute *attr, char * buf)
+{
+    return sprintf(buf, "%s\n", attr->attr.name);
+}
+
+static struct kobj_attribute node_two_attribute =
+    __ATTR(node_two, S_IRUGO, sysfs_demo_show_node_two, NULL); // 读属性
+
+//---------------------- 文件序列包括 两个节点
+static struct attribute *sysfs_demo_attributes[] = {
+    &node_one_attribute.attr,
+    &node_two_attribute.attr,
+    NULL
+};
+
+static const struct attribute_group sysfs_demo_attr_group = {
+    .attrs = sysfs_demo_attributes,
+};
+
 int pdr_probe(struct platform_device * pdev)
 {
     bool prop_bool = false;
@@ -40,6 +80,14 @@ int pdr_probe(struct platform_device * pdev)
             return -1;
         }
     }
+
+	//------------------ 在 目录下 创建 一个 文件序列
+
+	// platform_driver_register 的 驱动 会在 /sys/devices/platform/xxx 下面 创建文件 , xxx 为 dts 中的 节点名
+	if(sysfs_create_group(&pdev->dev.kobj, &sysfs_demo_attr_group) ) { //在 /sys/devices/platform/node-platform 下创建文件序列
+		pr_err("sysfs_create_group failed\n");
+	}
+
 	printk("suws_kernel bdd --- %s,%s,%d\n",__FILE__,__func__,__LINE__);
 	return 0;
 }
