@@ -4,14 +4,7 @@
 #include <linux/of.h>
 #include <linux/of_irq.h>
 #include <linux/interrupt.h>
-
-static int num=10;
-
-int get_mynum(void){
-	return num;
-}
-EXPORT_SYMBOL_GPL(get_mynum);
-
+#include <linux/i2c.h>
 
 static irqreturn_t irq_int_handler(void)
 {
@@ -59,7 +52,8 @@ static const struct attribute_group sysfs_demo_attr_group = {
     .attrs = sysfs_demo_attributes,
 };
 
-int pdr_probe(struct platform_device * pdev)
+static int i2c_device_probe (struct i2c_client *client,
+					  const struct i2c_device_id *id)
 {
     bool prop_bool = false;
     int prop_int = 0;
@@ -68,20 +62,20 @@ int pdr_probe(struct platform_device * pdev)
     unsigned int irq_number = 0; // sw interrupt number
     int ret = 0;
 
-	printk("suws_kernel cmdline num:%d %s,%s,%d\n",num,__FILE__,__func__,__LINE__);
 	printk("suws_kernel bdd +++ %s,%s,%d\n",__FILE__,__func__,__LINE__);
-    if (pdev->dev.of_node){
 
-        prop_bool = of_property_read_bool(pdev->dev.of_node,"prop_bool");
+    if (client->dev.of_node){
+
+        prop_bool = of_property_read_bool(client->dev.of_node,"prop_bool");
         printk("suws_kernel bdd prop_bool:%d,%s,%s,%d\n",prop_bool,__FILE__,__func__,__LINE__);
 
-        of_property_read_u32_index(pdev->dev.of_node,"prop_int",0,&prop_int);
+        of_property_read_u32_index(client->dev.of_node,"prop_int",0,&prop_int);
         printk("suws_kernel bdd prop_int:%d,%s,%s,%d\n",prop_int,__FILE__,__func__,__LINE__);
 
-        of_property_read_string(pdev->dev.of_node,"prop_string",(const char **)&prop_string);
+        of_property_read_string(client->dev.of_node,"prop_string",(const char **)&prop_string);
         printk("suws_kernel bdd prop_string:%s,%s,%s,%d\n",prop_string,__FILE__,__func__,__LINE__);
 
-        irq_number = irq_of_parse_and_map(pdev->dev.of_node,0);
+        irq_number = irq_of_parse_and_map(client->dev.of_node,0);
         printk("suws_kernel bdd irq_number:%d,%s,%s,%d\n",irq_number,__FILE__,__func__,__LINE__);
         ret = request_irq(irq_number, (irq_handler_t) irq_int_handler, IRQ_TYPE_LEVEL_HIGH, "node_platform", NULL);
         if (ret > 0) {
@@ -93,7 +87,7 @@ int pdr_probe(struct platform_device * pdev)
 	//------------------ 在 目录下 创建 一个 文件序列
 
 	// platform_driver_register 的 驱动 会在 /sys/devices/platform/xxx 下面 创建文件 , xxx 为 dts 中的 节点名
-	if(sysfs_create_group(&pdev->dev.kobj, &sysfs_demo_attr_group) ) { //在 /sys/devices/platform/node-platform 下创建文件序列
+	if(sysfs_create_group(&client->dev.kobj, &sysfs_demo_attr_group) ) { //在 /sys/devices/platform/node-platform 下创建文件序列
 		pr_err("sysfs_create_group failed\n");
 	}
 
@@ -101,7 +95,7 @@ int pdr_probe(struct platform_device * pdev)
 	return 0;
 }
 
-int pdr_remove(struct platform_device * pdev)
+static int i2c_device_remove (struct i2c_client *client)
 {
 	printk("suws_kernel bdd +++ %s,%s,%d\n",__FILE__,__func__,__LINE__);
 	printk("suws_kernel bdd --- %s,%s,%d\n",__FILE__,__func__,__LINE__);
@@ -109,38 +103,37 @@ int pdr_remove(struct platform_device * pdev)
 }
 
 static const struct of_device_id ids[] = {
-    { .compatible = "chip-name"},
+    { .compatible = "chip-name-i2c"}, //不可以错
     {  },
 };
 
-struct platform_driver pdr =
-{
-	.driver=
-	{
-		.name = "noneed to fill in",
-		.of_match_table = ids,
-
-	},
-	.probe = pdr_probe,
-	.remove = pdr_remove,
-
+static const struct i2c_device_id i2c_ids[] = {
+	{ .name = "xxx", }, //可以错
+	{ }
 };
 
-int __init _driver_init(void)
-{
-	platform_driver_register(&pdr);
-	return 0;
+static struct i2c_driver i2c_device_driver = {
+	.driver = {
+		.name   = "no need to fill i2c", // 可以为任何值
+		.owner	= THIS_MODULE,
+		.of_match_table = ids, // 不可以为null ,且必须正确
+	},
+	.probe		= i2c_device_probe,
+	.remove     = i2c_device_remove,
+	.id_table	= i2c_ids, //不可以为null
+};
 
+static int __init _driver_init(void)
+{
+	return i2c_add_driver(&i2c_device_driver);
 }
 
-void __exit _driver_exit(void)
+static void __exit _driver_exit(void)
 {
-	platform_driver_unregister(&pdr);
+	i2c_del_driver(&i2c_device_driver);
 	return ;
-
 }
 
-module_param(num,int,S_IRUGO);
 /********模块三要素**********/
 module_init(_driver_init);
 module_exit(_driver_exit);
