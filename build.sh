@@ -27,4 +27,7 @@ elif [ "$1" == "dts" ];then
         && cp arch/arm/boot/dts/vexpress-v2p-ca9.dtb ../tftpboot
 elif [ "$1" == "modules" ] || [ $1 == "module"  ];then
     export ARCH=arm CROSS_COMPILE=arm-linux-gnueabi-;make modules
+elif [ "$1" == "export"  ] || [ $1 == "exports"   ];then
+    export ARCH=arm CROSS_COMPILE=arm-linux-gnueabi-;
+	make export_report  > export_symbole.txt # 用来 导出 EXPORT 出来的符号
 fi
