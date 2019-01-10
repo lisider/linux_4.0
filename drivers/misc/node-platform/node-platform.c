@@ -4,6 +4,7 @@
 #include <linux/of.h>
 #include <linux/of_irq.h>
 #include <linux/interrupt.h>
+#include <linux/slab.h>
 
 static int num=10;
 
@@ -65,6 +66,11 @@ int pdr_probe(struct platform_device * pdev)
     int prop_int = 0;
     char *prop_string = NULL;
 
+    int array_cnt = 0; // 数组元素数量
+    int array_row = 0; //数组行数
+    int array_column = 4; // 数组列数
+    unsigned int * buf = NULL; // 用来存储数组元素的值
+
     unsigned int irq_number = 0; // sw interrupt number
     int ret = 0;
 
@@ -87,6 +93,25 @@ int pdr_probe(struct platform_device * pdev)
         if (ret > 0) {
             printk("request_irq failed\n");
             return -1;
+        }
+
+
+        array_cnt = of_property_count_u32_elems(pdev->dev.of_node, "prop_array");
+        array_row = array_cnt / array_column; // 一行4列
+        printk("suws_kernel bdd prop_array array_cnt:%d,array_column:%d,array_row:%d,%s,%s,%d\n",array_cnt,array_column,array_row,__FILE__,__func__,__LINE__);
+
+        buf = devm_kmalloc(&pdev->dev, array_cnt * sizeof(unsigned int), GFP_KERNEL);
+        of_property_read_u32_array(pdev->dev.of_node, "prop_array", buf, array_cnt);
+        {
+            printk("suws_kernel bdd prop_array array_value +++ ,%s,%s,%d\n",__FILE__,__func__,__LINE__);
+            int i = 0 , j = 0;
+            for( i = 0 ; i < array_row ; i++ ){
+                for( j = 0 ; j < array_column ; j++ ){
+                    printk("%d\t",buf[ array_column * i + j ]);
+                }
+                printk("\n");
+            }
+            printk("suws_kernel bdd prop_array array_value --- ,%s,%s,%d\n",__FILE__,__func__,__LINE__);
         }
     }
 

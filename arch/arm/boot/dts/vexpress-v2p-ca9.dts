@@ -89,6 +89,9 @@
         prop_int = <36>;
         // 55 是 gpio number HW interrupt ID
         interrupts = <0 55 4>; // 0 spi interrupts , 55 interrupt number ranges /spi [0-987]/ppi [0-15] , 4 高电平触发(0 ^,2 v,4 -,8 _)
+        prop_array = <0 1 2 3
+                      4 5 6 7
+                      8 9 10 11>;
 
 	};
 
