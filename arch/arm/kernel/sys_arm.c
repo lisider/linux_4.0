@@ -37,3 +37,9 @@ asmlinkage long sys_arm_fadvise64_64(int fd, int advice,
 {
 	return sys_fadvise64_64(fd, offset, len, advice);
 }
+
+asmlinkage long sys_my_add(int x,int y)
+{
+	printk("suws_kernel syscall %s,%s,%d\n",__FILE__,__func__,__LINE__);
+	return x+y;
+}
