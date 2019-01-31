@@ -61,6 +61,7 @@ static int i2c_device_probe (struct i2c_client *client,
 
     unsigned int irq_number = 0; // sw interrupt number
     int ret = 0;
+    unsigned int trigger_type = 0;
 
 	printk("suws_kernel bdd +++ %s,%s,%d\n",__FILE__,__func__,__LINE__);
 
@@ -77,7 +78,9 @@ static int i2c_device_probe (struct i2c_client *client,
 
         irq_number = irq_of_parse_and_map(client->dev.of_node,0);
         printk("suws_kernel bdd irq_number:%d,%s,%s,%d\n",irq_number,__FILE__,__func__,__LINE__);
-        ret = request_irq(irq_number, (irq_handler_t) irq_int_handler, IRQ_TYPE_LEVEL_HIGH, "node_platform", NULL);
+        trigger_type = irq_get_trigger_type(irq_number);
+        printk("suws_kernel bdd trigger_type:%d,%s,%s,%d\n",trigger_type,__FILE__,__func__,__LINE__);
+        ret = request_irq(irq_number, (irq_handler_t) irq_int_handler, trigger_type, "node_i2c_irq_name", NULL);
         if (ret > 0) {
             printk("request_irq failed\n");
             return -1;
