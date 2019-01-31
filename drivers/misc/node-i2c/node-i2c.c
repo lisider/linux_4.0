@@ -119,11 +119,11 @@ static struct i2c_driver i2c_device_driver = {
 	.driver = {
 		.name   = "no need to fill i2c", // 可以为任何值
 		.owner	= THIS_MODULE,
-		.of_match_table = ids, // 不可以为null ,且必须正确
+		.of_match_table = ids, // 不可以为null ,且必须正确, 用来在 i2c_device_match 中的of_driver_match_device中和设备树 匹配,只要是 compatible 兼容,就会匹配成功,但是匹配成功不一定会调用probe
 	},
 	.probe		= i2c_device_probe,
 	.remove     = i2c_device_remove,
-	.id_table	= i2c_ids, //不可以为null
+	//.id_table	= i2c_ids, //不可以为null ,若为null ,__driver_attach->driver_probe_device->really_probe->i2c_device_probe 会检测 driver->id_table 是不是为空,若为空,不调用 probe // 对应 linux_4.0/drivers/i2c/i2c-core.c 中的 660 行
 };
 
 static int __init _driver_init(void)
