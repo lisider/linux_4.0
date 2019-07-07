@@ -24,6 +24,7 @@ if [ $# -lt 1 ]; then
 	echo "Usage: $0 gdb"
 	echo "Usage: $0 build"
 	echo "Usage: $0 env"
+	echo "Usage: $0 eclipse"
 fi
 
 
@@ -55,7 +56,7 @@ case $1 in
         	DBG="-s -S"
         fi
 
-        qemu-system-arm -M vexpress-a9 -smp 4 -m 1024M -kernel arch/arm/boot/zImage \
+        qemu-system-arm -M vexpress-a9 -m 512M -kernel arch/arm/boot/zImage \
         		-dtb arch/arm/boot/dts/vexpress-v2p-ca9.dtb -nographic \
         		-append "rdinit=/linuxrc console=ttyAMA0 loglevel=8" \
         		$DBG
@@ -73,6 +74,10 @@ case $1 in
         ;;
 	env)
         sudo apt-get install qemu libncurses5-dev gcc-arm-linux-gnueabi build-essential gdb-arm-none-eabi gcc-aarch64-linux-gnu eclipse-cdt libdw-dev systemtap systemtap-runtime
+        ;;
+	eclipse)
+        eclipse &
+        #eclipse 怎么新建工程,参见 <<奔跑吧-linux内核-qemu调试内核-样章.pdf>>
         ;;
 
 esac
