@@ -29,6 +29,9 @@ if [ $# -lt 1 ]; then
 	echo "Usage: $0 build_cpio"
 	echo "Usage: $0 cpio_rootfs"
 	echo "Usage: $0 run_cpio"
+	echo "Usage: $0 img_rootfs"
+	echo "Usage: $0 build_img"
+	echo "Usage: $0 run_img"
 fi
 
 
@@ -57,6 +60,13 @@ case $1 in
         export ARCH=arm
         export CROSS_COMPILE=arm-linux-gnueabi-
         make vexpress_cpio_defconfig
+        make bzImage
+        make dtbs
+        ;;
+	build_img)
+        export ARCH=arm
+        export CROSS_COMPILE=arm-linux-gnueabi-
+        make vexpress_img-initrd_defconfig
         make bzImage
         make dtbs
         ;;
@@ -93,6 +103,7 @@ case $1 in
         	DBG="-s -S"
         fi
 
+        #  -initrd ./initrd.cpio.gz
         qemu-system-arm -M vexpress-a9 -m 512M -kernel arch/arm/boot/zImage \
         		-initrd ./initrd.cpio \
         		-dtb arch/arm/boot/dts/vexpress-v2p-ca9.dtb -nographic \
@@ -100,6 +111,29 @@ case $1 in
         		$DBG
 #-append "root=/dev/sda1"
         ;;
+	run_img)
+
+
+        if [ ! -c $LROOT/$ROOTFS_ARM32/$CONSOLE_DEV_NODE ]; then
+        	echo "please create console device node first, and recompile kernel"
+        	exit 1
+        fi
+
+        #if [ $# -eq 2 ] && [[ "debug" == $2  ]]; then
+        if [ $# -eq 2 ] ; then
+        	echo "Enable GDB debug mode"
+        	DBG="-s -S"
+        fi
+
+        #-initrd ./initrd.img.gz root=/dev/ram0
+#-append "init=/linuxrc console=ttyAMA0 loglevel=8 root=/dev/mmcblk0" \
+        qemu-system-arm -M vexpress-a9 -m 512M -kernel arch/arm/boot/zImage \
+        		-initrd ./initrd.img.gz \
+        		-dtb arch/arm/boot/dts/vexpress-v2p-ca9.dtb -nographic \
+        		-append "init=/linuxrc console=ttyAMA0 loglevel=8 root=/dev/ram0" \
+        		$DBG
+        ;;
+
 	kill)
         sudo kill -9 `ps -ef |grep qemu-system-arm |grep -v grep |head -1 | awk  '{print $2}'`
         ;;
@@ -125,6 +159,17 @@ case $1 in
         find . | cpio -o -H newc --file ../initrd.cpio
         cd ..
         ;;
+	img_rootfs)
+        rm initrd.img initrd.img.gz
+        dd if=/dev/zero of=initrd.img bs=512k count=6
+        mkfs.ext2 -F -m0 initrd.img
+        sudo mount -t ext2 -o loop initrd.img /mnt
+        sudo cp -r img-initrd-rootfs/* /mnt
+#sudo cp -r /home/pop/vexpress-platform/busybox/rootfs/* /mnt
+        sudo umount /mnt
+        gzip -9 initrd.img
+        ;;
+
 
 esac
 
