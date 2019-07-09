@@ -856,6 +856,7 @@ static void __init do_initcalls(void)
 
 	for (level = 0; level < ARRAY_SIZE(initcall_levels) - 1; level++)
 		do_initcall_level(level);
+    // level 5 rootfs_initcall(populate_rootfs); initramfs.c
 }
 
 /*
@@ -935,7 +936,9 @@ static int __ref kernel_init(void *unused)
 
 	flush_delayed_fput();
 
-	if (ramdisk_execute_command) {
+	if (ramdisk_execute_command) { // "/linuxrc"
+        //initramfs
+        //cpio-initrd
 		ret = run_init_process(ramdisk_execute_command);
 		if (!ret)
 			return 0;
@@ -996,6 +999,8 @@ static noinline void __init kernel_init_freeable(void)
 	sched_init_smp();
 
 	do_basic_setup();
+    // 已经挂载到 cpio-initrd 或者 initramfs.或者 还未挂载只是执行了 default_rootfs,在这里面创建了 /dev/console
+    // 或者 已经将 image-initrd 保存到 /initrd.img
 
 	/* Open the /dev/console on the rootfs, this should never fail */
 	if (sys_open((const char __user *) "/dev/console", O_RDWR, 0) < 0)
@@ -1008,13 +1013,23 @@ static noinline void __init kernel_init_freeable(void)
 	 * the work
 	 */
 
-	if (!ramdisk_execute_command)
+	if (!ramdisk_execute_command)  // 当 rdinit 设置时,会将rdinit= 的字符串丢到这个变量中 , initramfs 和 cpio-initrd 都要设置 rdinit=
 		ramdisk_execute_command = "/init";
 
+    // 在如下情况下,会满足
+    // 1. 挂载了 initramfs,找不到 ramdisk_execute_command
+    // 2. 挂载了 cpio-initrd,找不到 ramdisk_execute_command
+    // 3. 使用了 image-initrd,自然是找不到 ramdisk_execute_command 的
+    // 4. 使用了 default_rootfs,自然是找不到 ramdisk_execute_command 的
 	if (sys_access((const char __user *) ramdisk_execute_command, 0) != 0) {
 		ramdisk_execute_command = NULL;
-		prepare_namespace();
+		prepare_namespace(); 
+        // 如果使用了 image-initrd,就释放到根文件系统中.根据 root= 决定是否加载 image-initrd.
+        //  root=/dev/ram ,则 不卸载,就释放到根文件系统中,返回
+        //  root!=/dev/ram ,则 不卸载,就释放到根文件系统中,并 执行 init , 执行完返回,并挂载真正的根文件系统
 	}
+
+    // 此时如果能到这一行,则表示已经挂载到真正的根文件目录,不管这个根文件系统是从ram,还是flash,还是net上来的
 
 	/*
 	 * Ok, we have completed the initial bootup, and

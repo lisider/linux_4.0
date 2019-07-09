@@ -537,6 +537,7 @@ void __init mount_root(void)
 
 /*
  * Prepare the namespace - decide what/where to mount, load ramdisks, etc.
+ * 对于image-initrd或者是虚拟文件系统中没有包含 /init的情况，会由prepare_namespace
  */
 void __init prepare_namespace(void)
 {
@@ -571,7 +572,7 @@ void __init prepare_namespace(void)
 			root_device_name += 5;
 	}
 
-	if (initrd_load())
+	if (initrd_load()) // 如果为真,表示执行了 initrd 中的linuxrc // 是不是 有 initrd 则 一定会 goto out ?
 		goto out;
 
 	/* wait for any asynchronous scanning to complete */
@@ -589,11 +590,12 @@ void __init prepare_namespace(void)
 	if (is_floppy && rd_doload && rd_load_disk(0))
 		ROOT_DEV = Root_RAM0;
 
-	mount_root();
+    // 挂载硬盘
+	mount_root(); // 将实际的根文件系统挂载在rootfs文件系统的"/root"目录下，并将当前目录切换 到实际根文件系统的根目录下
 out:
 	devtmpfs_mount("dev");
-	sys_mount(".", "/", NULL, MS_MOVE, NULL);
-	sys_chroot(".");
+	sys_mount(".", "/", NULL, MS_MOVE, NULL);//将实际文件系统 的挂载点移到(MS_MOVE)rootfs的"/"根目录下
+	sys_chroot("."); // 将实际文件系统的根目录作为初始进程的根目录
 }
 
 static bool is_tmpfs;

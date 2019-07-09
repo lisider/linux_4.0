@@ -605,13 +605,13 @@ static void __init clean_rootfs(void)
 }
 #endif
 
-static int __init populate_rootfs(void)
+static int __init populate_rootfs(void) // 只要使用了 initramfs 或者 cpio-initrd 或者 image-initrd ,都要定义 CONFIG_BLK_DEV_INITRD
 {
-	char *err = unpack_to_rootfs(__initramfs_start, __initramfs_size);
+	char *err = unpack_to_rootfs(__initramfs_start, __initramfs_size); // 释放 initramfs,在根目录下创建相应的文件
 	if (err)
 		panic("%s", err); /* Failed to decompress INTERNAL initramfs */
-	if (initrd_start) {
-#ifdef CONFIG_BLK_DEV_RAM
+	if (initrd_start) { // 当使用了 initrd 时, bootargs 中应该设置  initrd (-initrd ./initrd.cpio),此时 不为 NULL.
+#ifdef CONFIG_BLK_DEV_RAM // 若是 使用了 image-initrd ,则应该 开这个宏,不开的话就把 initrd 默认当成 cpio-initrd 处理
 		int fd;
 		printk(KERN_INFO "Trying to unpack rootfs image as initramfs...\n");
 		err = unpack_to_rootfs((char *)initrd_start,
@@ -640,12 +640,13 @@ static int __init populate_rootfs(void)
 		}
 	done:
 #else
-		printk(KERN_INFO "Unpacking initramfs...\n");
+		printk(KERN_INFO "Unpacking initramfs...\n"); // 其实这里在处理 cpio-initrd
+        // 挂载 cpio-initrd
 		err = unpack_to_rootfs((char *)initrd_start,
 			initrd_end - initrd_start);
 		if (err)
 			printk(KERN_EMERG "Initramfs unpacking failed: %s\n", err);
-		free_initrd();
+		free_initrd(); // 释放 initrd 所占据的内存,因为bootloader 会将 cpio-initrd 放到内存里,内核解析过后,应该将内存释放
 #endif
 		/*
 		 * Try loading default modules from initramfs.  This gives
