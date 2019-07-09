@@ -32,6 +32,9 @@ if [ $# -lt 1 ]; then
 	echo "Usage: $0 img_rootfs"
 	echo "Usage: $0 build_img"
 	echo "Usage: $0 run_img"
+	echo "Usage: $0 build_realfs"
+	echo "Usage: $0 run_real_fs"
+	echo "Usage: $0 real_rootfs"
 fi
 
 
@@ -64,6 +67,14 @@ case $1 in
         make dtbs
         ;;
 	build_img)
+        export ARCH=arm
+        export CROSS_COMPILE=arm-linux-gnueabi-
+        make vexpress_img-initrd_defconfig
+        make bzImage
+        make dtbs
+        ;;
+
+	build_realfs)
         export ARCH=arm
         export CROSS_COMPILE=arm-linux-gnueabi-
         make vexpress_img-initrd_defconfig
@@ -134,6 +145,29 @@ case $1 in
         		$DBG
         ;;
 
+	run_real_fs)
+
+
+        if [ ! -c $LROOT/$ROOTFS_ARM32/$CONSOLE_DEV_NODE ]; then
+        	echo "please create console device node first, and recompile kernel"
+        	exit 1
+        fi
+
+        #if [ $# -eq 2 ] && [[ "debug" == $2  ]]; then
+        if [ $# -eq 2 ] ; then
+        	echo "Enable GDB debug mode"
+        	DBG="-s -S"
+        fi
+
+        #-initrd ./initrd.img.gz
+        #当在下面的命令中加上上面的选项时,会去挂载 initrd,然后挂载真正的文件系统
+        #会根据真正的文件系统中有没有 /initrd 目录 来决定initrd是卸载还是改挂载到 /initrd
+        qemu-system-arm -M vexpress-a9 -m 512M -kernel arch/arm/boot/zImage \
+        		-dtb arch/arm/boot/dts/vexpress-v2p-ca9.dtb -nographic \
+                -append "init=/linuxrc console=ttyAMA0 loglevel=8 root=/dev/mmcblk0" \
+                -sd real_rootfs.img \
+        		$DBG
+        ;;
 	kill)
         sudo kill -9 `ps -ef |grep qemu-system-arm |grep -v grep |head -1 | awk  '{print $2}'`
         ;;
@@ -170,6 +204,15 @@ case $1 in
         gzip -9 initrd.img
         ;;
 
+	real_rootfs)
+        rm real_rootfs.img
+        dd if=/dev/zero of=real_rootfs.img bs=1024k count=25
+#mkfs.ext2 -F -m0 real_rootfs.img
+        mkfs.ext2 real_rootfs.img
+        sudo mount -t ext2 -o loop real_rootfs.img /mnt
+        sudo cp -r /home/pop/vexpress-platform/busybox/rootfs/* /mnt
+        sudo umount /mnt
+        ;;
 
 esac
 
