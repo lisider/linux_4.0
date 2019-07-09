@@ -23,8 +23,12 @@ if [ $# -lt 1 ]; then
 	echo "Usage: $0 kill"
 	echo "Usage: $0 gdb"
 	echo "Usage: $0 build"
+	echo "Usage: $0 rebuild"
 	echo "Usage: $0 env"
 	echo "Usage: $0 eclipse"
+	echo "Usage: $0 build_cpio"
+	echo "Usage: $0 cpio_rootfs"
+	echo "Usage: $0 run_cpio"
 fi
 
 
@@ -39,6 +43,20 @@ case $1 in
         sudo mknod console c 5 1
         cd ../..
         make vexpress_defconfig
+        make bzImage
+        make dtbs
+        ;;
+
+	rebuild)
+        export ARCH=arm
+        export CROSS_COMPILE=arm-linux-gnueabi-
+        make bzImage
+        ;;
+
+	build_cpio)
+        export ARCH=arm
+        export CROSS_COMPILE=arm-linux-gnueabi-
+        make vexpress_cpio_defconfig
         make bzImage
         make dtbs
         ;;
@@ -61,6 +79,27 @@ case $1 in
         		-append "rdinit=/linuxrc console=ttyAMA0 loglevel=8" \
         		$DBG
         ;;
+	run_cpio)
+
+
+        if [ ! -c $LROOT/$ROOTFS_ARM32/$CONSOLE_DEV_NODE ]; then
+        	echo "please create console device node first, and recompile kernel"
+        	exit 1
+        fi
+
+        #if [ $# -eq 2 ] && [[ "debug" == $2  ]]; then
+        if [ $# -eq 2 ] ; then
+        	echo "Enable GDB debug mode"
+        	DBG="-s -S"
+        fi
+
+        qemu-system-arm -M vexpress-a9 -m 512M -kernel arch/arm/boot/zImage \
+        		-initrd ./initrd.cpio \
+        		-dtb arch/arm/boot/dts/vexpress-v2p-ca9.dtb -nographic \
+        		-append "rdinit=/linuxrc console=ttyAMA0 loglevel=8" \
+        		$DBG
+#-append "root=/dev/sda1"
+        ;;
 	kill)
         sudo kill -9 `ps -ef |grep qemu-system-arm |grep -v grep |head -1 | awk  '{print $2}'`
         ;;
@@ -78,6 +117,13 @@ case $1 in
 	eclipse)
         eclipse &
         #eclipse 怎么新建工程,参见 <<奔跑吧-linux内核-qemu调试内核-样章.pdf>>
+        ;;
+
+	cpio_rootfs)
+        rm initrd.cpio
+        cd _install_arm32
+        find . | cpio -o -H newc --file ../initrd.cpio
+        cd ..
         ;;
 
 esac
